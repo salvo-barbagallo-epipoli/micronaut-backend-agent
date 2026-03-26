@@ -1,0 +1,11 @@
+highways:
+  datastore:
+    datastoreId: ${DATASTORE_ID:datastore-eu}
+    namespace: ${DATASTORE_NAMESPACE:demo}
+    projectId: ${DATASTORE_PROJECT_ID:pocketwallet-dev-srv-epipoli}
+gcloud:
+  projectId: ${GCLOUD_PROJECT_ID:pocketwallet-dev-srv-epipoli}
+logger:
+  levels:
+    com.epipoli.starter: INFO
+    com.epipoli.commons.datastore: INFO

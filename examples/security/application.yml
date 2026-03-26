@@ -1,0 +1,29 @@
+micronaut:
+  security:
+    authentication: bearer
+    endpoints:
+      login:
+        enabled: false
+      oauth:
+        enabled: false
+    token:
+      jwt:
+        signatures:
+          secret:
+            generator:
+              secret: ${JWT_GENERATOR_SIGNATURE_SECRET:pleaseChangeThisSecretForANewOne}
+    interceptUrlMap:
+      - pattern: /demo/**
+        access:
+          - isAnonymous()
+      - pattern: /swagger/**
+        httpMethod: GET
+        access:
+          - isAnonymous()
+      - pattern: /swagger-ui/**
+        httpMethod: GET
+        access:
+          - isAnonymous()
+      - pattern: /**
+        access:
+          - isAuthenticated()

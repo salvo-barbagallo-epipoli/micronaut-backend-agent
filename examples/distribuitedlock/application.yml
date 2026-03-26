@@ -1,0 +1,3 @@
+locks:
+  bucket: ${LOCKS_BUCKET:locks-pocketwallet-dev-srv-epipoli}
+  ttl: ${LOCKS_TTL:300}

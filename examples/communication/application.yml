@@ -1,0 +1,13 @@
+highways:
+  communication:
+    template: 
+      projectId: ${COMMUNICATION_TEMPLATE_PROJECT_ID:highways-dev-epipoli}
+      datastoreId: ${COMMUNICATION_TEMPLATE_DATASTORE_ID:datastore-eu}
+      namespace: ${COMMUNICATION_TEMPLATE_NAMESPACE:businessportal}
+    data: 
+      projectId: ${COMMUNICATION_DATA_PROJECT_ID:highways-dev-epipoli}
+      datastoreId: ${COMMUNICATION_DATA_DATASTORE_ID:datastore-eu}
+      namespace: ${COMMUNICATION_DATA_NAMESPACE:businessportal}
+    topic:
+      id: ${COMMUNICATION_TOPIC_ID:communication-topic}
+      projectId: ${COMMUNICATION_TOPIC_PROJECT_ID:highways-dev-epipoli}
