@@ -1,0 +1,70 @@
+timeout: 4600s
+options:
+  machineType: 'E2_HIGHCPU_32'
+  logging: CLOUD_LOGGING_ONLY
+steps:
+  - name: gcr.io/cloud-builders/gsutil
+    dir: /root
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        (
+          gsutil cp gs://store-$PROJECT_ID/demo_m2-cache.tar.gz /tmp/m2-cache.tar.gz &&
+          tar -xzf /tmp/m2-cache.tar.gz
+        ) || echo 'Cache not found'
+    volumes:
+      - name: m2
+        path: /root/.m2/
+
+  - name: 'ghcr.io/graalvm/native-image:ol8-java17-22.3.3'
+    args:
+      - -c
+      - |
+        ./mvnw package -DskipTests -Dpackaging=native-image 
+    entrypoint: bash
+    volumes:
+      - name: m2
+        path: /root/.m2/
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - '-t'
+      - 'eu.gcr.io/$PROJECT_ID/demo'
+      - '.'
+    id: Tag Image
+    entrypoint: docker
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - 'eu.gcr.io/$PROJECT_ID/demo'
+    id: Push Image
+    entrypoint: docker
+
+  - name: gcr.io/cloud-builders/gsutil
+    dir: /root
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        tar -czf /tmp/m2-cache.tar.gz .m2 &&  
+        gsutil cp /tmp/m2-cache.tar.gz gs://store-$PROJECT_ID/demo_m2-cache.tar.gz
+    volumes:
+      - name: m2
+        path: /root/.m2/
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    args:
+      - run
+      - services
+      - update
+      - demo
+      - '--platform=managed'
+      - '--image=eu.gcr.io/$PROJECT_ID/demo:latest'
+      - '--region=europe-west1'
+      - '--project=$PROJECT_ID'
+      - '--quiet'
+    id: Deploy west1
+    entrypoint: gcloud
