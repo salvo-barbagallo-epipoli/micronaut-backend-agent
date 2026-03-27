@@ -132,9 +132,17 @@ Impara come implementare operazioni CRUD (Create, Read, Update, Delete) usando `
 **Componenti principali**:
 - `@HWEntity` - Annozione per entità
 - `HwEntityService` - Servizio di persistenza
-- `HwEntityName` - Nomi delle entità
+- `HwEntityName` - Nomi delle entità 
 - `HwFilters` - Costruttore di filtri
 
+**Esempio HwEntityName**
+```java
+public interface HwEntityName {
+    public String CUSTOMER = "customer";
+    public String PRODUCT = "product";
+    public String ORDER = "order";
+}
+```
 ---
 
 ### 🔒 Security - Autenticazione e Autorizzazione
@@ -501,7 +509,6 @@ L'entità deve avere le annotazioni Highways:
 ```java
 import com.epipoli.commons.annotation.HWAttribute;
 import com.epipoli.commons.annotation.HWEntity;
-import com.epipoli.commons.annotation.HwEntityName;
 import com.epipoli.commons.interfaces.IEntity;
 import io.micronaut.serde.annotation.Serdeable;
 import io.micronaut.core.annotation.ReflectiveAccess;
