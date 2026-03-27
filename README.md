@@ -38,6 +38,24 @@ highways:
 - [ ] Namespace specificato
 - [ ] Project ID allineato con gcloud.projectId
 
+#### Se usi **COMUNICAZIONI** (examples/communication/) per inviare comunicazioni
+```yaml
+highways:
+  communication:
+    template: 
+      projectId: 
+      datastoreId: 
+      namespace: 
+    data: 
+      projectId: 
+      datastoreId: 
+      namespace: 
+    topic:
+      id: 
+      projectId: 
+
+```
+
 #### Se usi **Distributed Lock** (examples/distribuitedlock/)
 ```yaml
 locks:
