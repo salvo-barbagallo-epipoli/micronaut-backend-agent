@@ -2,76 +2,98 @@
 
 Benvenuto nel **Backend Agent** di Epipoli! Questa è una guida completa per sviluppare microservizi con il framework **Highways** costruito su **Micronaut**.
 
-## Cos'è il Backend Agent?
 
-Il Backend Agent è una raccolta di esemplificazioni e guide pratiche per sviluppare applicazioni backend robuste, scalabili e sicure utilizzando:
+Progetto Base
 
-- **Micronaut**: Framework Java moderno e leggero per microservizi
-- **Highways Framework**: Framework proprietario di Epipoli per accelerare lo sviluppo
-- **Google Cloud**: Integrazione completa con servizi Google Cloud (Cloud Run, GKE, Storage)
 
-## Struttura del Progetto
 
-```
-backend-agent/
-├── README.md                      # Questo file - Guida introduttiva
-├── ARCHITECTURE.md                # Architettura generale del framework
-├── CODING_GUIDELINES.md           # Linee guida di codifica
-│
-├── examples/                      # Esempi pratici e implementazioni
-│   ├── communication/             # Comunicazione tra servizi
-│   ├── crud/                      # Operazioni CRUD con HwEntityService
-│   ├── distribuitedlock/          # Lock distribuiti con Google Cloud Storage
-│   ├── exceptions/                # Gestione centralizzata delle eccezioni
-│   ├── internalrequest/           # Richieste HTTP a microservizi esterni
-│   └── security/                  # Autenticazione e autorizzazione con JWT
-│
-├── starter-project/               # Progetto starter completo con tutte le dipendenze
-│   ├── pom.xml                    # Configuration Maven
-│   ├── src/
-│   │   ├── main/
-│   │   │   ├── java/              # Codice sorgente
-│   │   │   └── resources/         # application.yml e configurazioni
-│   │   └── test/                  # Test unitari
-│   └── Dockerfile                 # Container configuration
-│
-└── templates/                     # Template reusabili e scaffolding
-```
 
 ## Quick Start
 
-### 1. Clona o Esplora gli Esempi
-
-Scegli un esempio da cui iniziare:
-
-```bash
-cd examples/crud           # Operazioni di database
-cd examples/security       # Autenticazione JWT
-cd examples/crud           # Transazioni distribuite
-cd examples/exceptions     # Error handling
-```
-
-### 2. Leggi la Documentazione
-
-Ogni cartella contiene un `README.md` dettagliato:
-
-```bash
-cat examples/crud/README.md           # CRUD e HwEntityService
-cat examples/security/README.md       # Autenticazione JWT
-cat examples/distribuitedlock/README  # Distributed locks
-cat examples/exceptions/README.md     # Exception handling
-cat examples/internalrequest/README   # Microservice calls
-```
-
 ### 3. Usa il Progetto Starter
 
-Il `starter-project/` è un progetto completo pronto per iniziare:
+Il `starter-project/` è un progetto blank completo pronto per iniziare, copialo e sostituisci nome app e artifactId
 
 ```bash
 cd starter-project
 mvn clean install
 mvn mn:run                # Avvia il server
 ```
+
+
+### 🔹 Feature-Specific Configuration
+
+Aggiungi SOLO le proprietà richieste dal tuo use case:
+
+#### Se usi **CRUD** (examples/crud/) per salvare i dati in database
+```yaml
+highways:
+  datastore:
+    datastoreId: ${DATASTORE_ID:datastore-eu}
+    namespace: ${DATASTORE_NAMESPACE:demo}
+    projectId: ${DATASTORE_PROJECT_ID:pocketwallet-dev-srv-epipoli}
+```
+**Checklist:**
+- [ ] Datastore ID configurato
+- [ ] Namespace specificato
+- [ ] Project ID allineato con gcloud.projectId
+
+#### Se usi **Distributed Lock** (examples/distribuitedlock/)
+```yaml
+locks:
+  bucket: ${LOCKS_BUCKET:locks-pocketwallet-dev-srv-epipoli}
+  ttl: ${LOCKS_TTL:300}
+```
+**Checklist:**
+- [ ] GCS bucket per i lock creato
+- [ ] TTL impostato (secondi)
+- [ ] Bucket permissions configurate
+
+#### Se usi **Security JWT** (examples/security/)
+```yaml
+micronaut:
+  security:
+    authentication: bearer
+    token:
+      jwt:
+        signatures:
+          secret:
+            generator:
+              secret: ${JWT_GENERATOR_SIGNATURE_SECRET:changeThisSecret}
+    interceptUrlMap:
+      - pattern: /health/**
+        access:
+          - isAnonymous()
+      - pattern: /swagger/**
+        httpMethod: GET
+        access:
+          - isAnonymous()
+      - pattern: /**
+        access:
+          - isAuthenticated()
+```
+**Checklist:**
+- [ ] JWT_GENERATOR_SIGNATURE_SECRET impostato (PRODUZIONE: env var)
+- [ ] Pattern degli endpoint configurati
+- [ ] Public endpoints (health, swagger) consentiti
+- [ ] Tutti gli altri endpoint richiedono autenticazione
+
+#### Se comunichi con **microservizi interni** (examples/internalrequest/)
+```yaml
+# Eredita da base configuration
+# Assicurati che GOOGLE_APPLICATION_CREDENTIALS sia configurato
+```
+**Checklist:**
+- [ ] Google Cloud credentials file presente
+- [ ] GOOGLE_APPLICATION_CREDENTIALS env var configurata
+- [ ] Service account con permessi corretti
+
+### 📋 Ambiente-Specific Overrides
+
+```
+
+Attiva con: `java -jar app.jar -Dmicronaut.environments=prod`
+
 
 ## Guida agli Esempi
 
@@ -81,11 +103,11 @@ mvn mn:run                # Avvia il server
 
 Impara come implementare operazioni CRUD (Create, Read, Update, Delete) usando `HwEntityService`:
 
-- ✅ Creare entità
-- ✅ Leggere singoli record
-- ✅ Aggiornare entità
-- ✅ Elencare con filtri e paginazione
-- ✅ Operazioni transazionali con `ITransactionManager`
+-  Creare entità
+-  Leggere singoli record
+-  Aggiornare entità
+-  Elencare con filtri e paginazione
+-  Operazioni transazionali con `ITransactionManager`
 
 **Quando usarlo**: Necessiti di operazioni di database standard, persistenza dati, query
 
@@ -103,12 +125,12 @@ Impara come implementare operazioni CRUD (Create, Read, Update, Delete) usando `
 
 Implementa autenticazione con JWT e controllo d'accesso basato su ruoli:
 
-- ✅ Login con username/password
-- ✅ Generazione JWT token
-- ✅ Protezione degli endpoint
-- ✅ Ruoli e autorizzazione
-- ✅ BCrypt password hashing
-- ✅ Configurazione YAML
+-  Login con username/password
+-  Generazione JWT token
+-  Protezione degli endpoint
+-  Ruoli e autorizzazione
+-  BCrypt password hashing
+-  Configurazione YAML
 
 **Quando usarlo**: Necessiti di autenticazione API, protezione degli endpoint, gestione dei ruoli
 
@@ -126,11 +148,11 @@ Implementa autenticazione con JWT e controllo d'accesso basato su ruoli:
 
 Implementa lock distribuiti per coordinare operazioni critiche tra più istanze:
 
-- ✅ Lock basati su GCS bucket
-- ✅ TTL automatico
-- ✅ BlockingLockExecutor per operazioni sincrone
-- ✅ LockExecutor per operazioni reactive
-- ✅ Gestione della scadenza
+-  Lock basati su GCS bucket
+-  TTL automatico
+-  BlockingLockExecutor per operazioni sincrone
+-  LockExecutor per operazioni reactive
+-  Gestione della scadenza
 
 **Quando usarlo**: Necessiti di evitare race condition, job distribuiti, operazioni critiche atomiche
 
@@ -142,17 +164,17 @@ Implementa lock distribuiti per coordinare operazioni critiche tra più istanze:
 
 ---
 
-### ⚠️ Exception Handling - Gestione Centralizzata Errori
+### ⚠ Exception Handling - Gestione Centralizzata Errori
 
 **Cartella**: `examples/exceptions/`
 
 Implementa un Global Exception Handler per gestire tutte le eccezioni uniformemente:
 
-- ✅ DemoException base
-- ✅ Eccezioni specifiche
-- ✅ ErrorController globale
-- ✅ Response HTTP coerente
-- ✅ Logging centralizzato
+-  DemoException base
+-  Eccezioni specifiche
+-  ErrorController globale
+-  Response HTTP coerente
+-  Logging centralizzato
 
 **Quando usarlo**: Necessiti di gestire errori uniformemente, trasformare eccezioni in risposte HTTP
 
@@ -164,17 +186,17 @@ Implementa un Global Exception Handler per gestire tutte le eccezioni uniformeme
 
 ---
 
-### 📡 Internal Request - Chiamate a Microservizi
+### Internal Request - Chiamate a Microservizi
 
 **Cartella**: `examples/internalrequest/`
 
 Implementa comunicazione sicura tra microservizi usando Google Cloud Identity Tokens:
 
-- ✅ Richieste HTTP ad altri servizi
-- ✅ Autenticazione con Google Cloud Credentials
-- ✅ Identity Token generation
-- ✅ Gestione errori HTTP
-- ✅ Retry e timeout
+-  Richieste HTTP ad altri servizi
+-  Autenticazione con Google Cloud Credentials
+-  Identity Token generation
+-  Gestione errori HTTP
+-  Retry e timeout
 
 **Quando usarlo**: Necessiti di chiamare altri microservizi in modo sicuro, comunicazione service-to-service
 
@@ -192,10 +214,10 @@ Implementa comunicazione sicura tra microservizi usando Google Cloud Identity To
 
 Implementa pattern di comunicazione tra servizi usando factory e servizi dedicati:
 
-- ✅ Comunicazione asincrona
-- ✅ Factory pattern
-- ✅ Servizi di comunicazione
-- ✅ Error handling
+-  Comunicazione asincrona
+-  Factory pattern
+-  Servizi di comunicazione
+-  Error handling
 
 **Quando usarlo**: Necessiti di comunicare tra componenti, publish-subscribe pattern
 
@@ -229,11 +251,33 @@ transactionManager.commit()    // o rollback()
 Costruttore di query fluido:
 
 ```java
-HwFilters.and(
-    HwFilters.eq("sku", "ABC123"),
-    HwFilters.gte("price", 10.0),
-    HwFilters.lte("price", 100.0)
-)
+     HwFilters.and(
+        HwFilters.eq("code", filter.getCode()),
+        HwFilters.eq("state", filter.getState()),
+        HwFilters.eq("orderId", filter.getOrderId()),
+        HwFilters.eq("companyId", filter.getCompanyId()),
+        HwFilters.eq("typologyId", filter.getTypologyId()),
+
+        //Caso Instant
+        HwFilters.gte("activationDate", Optional.ofNullable(filter.getActivationDate())
+            .map(i -> i.truncatedTo(ChronoUnit.DAYS)).orElse(null)),
+        HwFilters.lt("activationDate", Optional.ofNullable(filter.getActivationDate())
+            .map(i -> i.truncatedTo(ChronoUnit.DAYS).plus(1, ChronoUnit.DAYS)).orElse(null)),
+
+        HwFilters.gte("expireDate", Optional.ofNullable(filter.getExpireDate())
+            .map(i -> i.truncatedTo(ChronoUnit.DAYS)).orElse(null)),
+        HwFilters.lt("expireDate", Optional.ofNullable(filter.getExpireDate())
+            .map(i -> i.truncatedTo(ChronoUnit.DAYS).plus(1, ChronoUnit.DAYS)).orElse(null)),
+
+        HwFilters.gte("sequentialNumber", filter.getSequentialNumberFrom()),
+        HwFilters.lte("sequentialNumber", filter.getSequentialNumberTo()),
+
+        HwFilters.or(
+            HwFilters.icontains("activationStoreCode", filter.getActivationStore()),
+            HwFilters.icontains("activationStoreName", filter.getActivationStore())
+        ),
+        HwFilters.icontains("orderNumber", filter.getOrderNumber())
+    );
 ```
 
 ### Annotazioni Principali
@@ -244,7 +288,289 @@ HwFilters.and(
 @Secured({RoleType.ROLE_API})      // Protegge endpoint
 @Error(global = true)              // Exception handler globale
 @Singleton                          // Bean Micronaut singleton
+@Factory                            // Factory di bean Highways
+@Bean                               // Bean Micronaut fornito dalla factory
 ```
+
+### 🏭 HighwaysFactory - Provisioning dei Bean (OBBLIGATORIO)
+
+**Cos'è**: Una `@Factory` class che configura e fornisce i bean critici di Highways Framework (CrudService, HwEntityService, Datastore, GoogleCredentials) al contenitore di dependency injection di Micronaut.
+
+**Perché è obbligatorio**: Senza HighwaysFactory, non è possibile:
+- Iniettare `HwEntityService` nei servizi
+- Accedere a Google Cloud Credentials
+- Configurare Google Cloud Datastore
+- Usare CrudService
+
+**Posizione**: `src/main/java/com/epipoli/{projectname}/factory/HighwaysFactory.java`
+
+**Struttura base**:
+
+```java
+import io.micronaut.context.annotation.Factory;
+import io.micronaut.context.annotation.Bean;
+import org.highways.sdk.base.CrudService;
+import org.highways.sdk.base.HwEntityService;
+// ... altri import
+
+@Factory
+public class HighwaysFactory {
+    
+    private final GoogleCredentials googleCredentials;
+    private final Datastore datastore;
+    private final String namespace;
+    
+    public HighwaysFactory(
+        @Value("${gcloud.project-id}") String projectId,
+        @Value("${highways.datastore.datastore-id}") String datastoreId,
+        @Value("${highways.datastore.namespace}") String namespace
+    ) throws IOException {
+        this.googleCredentials = loadGoogleCredentials();
+        this.datastore = Datastore.newBuilder()
+            .setProjectId(projectId)
+            .setDatabaseId(datastoreId)
+            .build();
+        this.namespace = namespace;
+    }
+    
+    @Bean
+    public CrudService crudService() {
+        return new CrudService(new DatastoreConfig(datastore, namespace));
+    }
+    
+    @Bean
+    public HwEntityService hwEntityService() {
+        return new HwEntityService(crudService());
+    }
+    
+    private GoogleCredentials loadGoogleCredentials() throws IOException {
+        String credentialsPath = System.getenv("GCLOUD_CREDENTIALS");
+        if (credentialsPath != null && !credentialsPath.isEmpty()) {
+            return GoogleCredentials.fromStream(
+                new FileInputStream(credentialsPath));
+        }
+        return GoogleCredentials.getApplicationDefault();
+    }
+}
+```
+
+**Configura in application.yml**:
+
+```yaml
+gcloud:
+  project-id: ${GCLOUD_PROJECT_ID}
+
+highways:
+  datastore:
+    datastore-id: my-datastore
+    namespace: default-namespace
+```
+
+**Gestisci credenziali**:
+
+```bash
+# Opzione 1: File di credenziali
+export GCLOUD_CREDENTIALS=/path/to/service-account.json
+
+# Opzione 2: Application Default Credentials
+export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
+```
+
+---
+
+### 🎯 Servizi con HwEntityService - Pattern (OBBLIGATORIO)
+
+**Cos'è**: I servizi devono iniettare `HwEntityService` per eseguire operazioni CRUD su Datastore. Questo è il pattern standard per tutta la logica di persistenza.
+
+**Perché**: 
+- Separazione tra logica di business (service) e persistenza
+- Riutilizzo di HwEntityService fornito da HighwaysFactory
+- Consistenza con il pattern Highways Framework
+
+**Posizione**: `src/main/java/com/epipoli/{projectname}/services/{EntityName}Service.java`
+
+**Struttura base**:
+
+```java
+import com.epipoli.commons.repository.HwEntityService;
+import com.epipoli.commons.queryfilter.HwFilters;
+import com.epipoli.commons.queryfilter.HwQueryOptions;
+import jakarta.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@Singleton
+public class ProductService {
+    private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
+    
+    private final HwEntityService hwEntityService;
+    
+    // Iniettare HwEntityService nel costruttore
+    public ProductService(HwEntityService hwEntityService) {
+        this.hwEntityService = hwEntityService;
+    }
+    
+    // CREATE: Creare una nuova entità
+    public Product createProduct(Product product) {
+        product.setId(null); // ID autogenerato da Datastore
+        Product created = hwEntityService.create(product);
+        logger.info("Prodotto creato: id={}, sku={}", created.getId(), created.getSku());
+        return created;
+    }
+    
+    // READ: Leggere un singolo record per ID
+    public Product getProduct(String productId) {
+        return hwEntityService.findById(Product.class, productId)
+            .orElseThrow(() -> new ProductNotFoundException(productId));
+    }
+    
+    // READ: Cercare per campo specifico (es. SKU)
+    public Product findBySku(String sku) {
+        var result = hwEntityService.list(
+            Product.class,
+            HwFilters.eq("sku", sku),
+            HwQueryOptions.builder().limit(1).build()
+        );
+        if (result.getList().isEmpty()) {
+            throw new ProductNotFoundException("SKU: " + sku);
+        }
+        return result.getList().get(0);
+    }
+    
+    // UPDATE: Aggiornare un'entità
+    public void updateProduct(String productId, Product product) {
+        product.setId(productId); // Imposta l'ID
+        hwEntityService.findById(Product.class, productId)
+            .orElseThrow(() -> new ProductNotFoundException(productId));
+        hwEntityService.upsert(product);
+        logger.info("Prodotto aggiornato: id={}", productId);
+    }
+    
+    // LIST: Elencare con filtri e paginazione
+    public IListResponse<Product> listProducts(String skuFilter, int start, int limit) {
+        var filter = HwFilters.and(
+            HwFilters.eq("sku", skuFilter),
+            HwFilters.gte("price", 0.0)
+        );
+        
+        var options = HwQueryOptions.builder()
+            .start(start)
+            .limit(limit)
+            .includeCount(true)
+            .build();
+        
+        return hwEntityService.list(Product.class, filter, options);
+    }
+}
+
+//dove IListResponse già presente in hw-crud 
+```
+public interface IListResponse<T> {
+   Long getSize();
+
+   List<T> getResults();
+
+   void setSize(Long var1);
+
+   void setResults(List<T> var1);
+}
+```
+
+**Pattern di entità**:
+
+L'entità deve avere le annotazioni Highways:
+
+```java
+import com.epipoli.commons.annotation.HWAttribute;
+import com.epipoli.commons.annotation.HWEntity;
+import com.epipoli.commons.annotation.HwEntityName;
+import com.epipoli.commons.interfaces.IEntity;
+import io.micronaut.serde.annotation.Serdeable;
+import io.micronaut.core.annotation.ReflectiveAccess;
+import io.micronaut.core.annotation.Introspected;
+import jakarta.validation.constraints.*;
+import lombok.Data;
+
+@Data
+@Serdeable
+@ReflectiveAccess //Sempre presente nei payload in ingresso e uscita
+@Introspected //Sempre presente nei payload in ingresso e uscita
+@HWEntity(HwEntityName.CUSTOMER)  // o PRODUCT, ORDER, etc.
+public class Customer implements IEntity<Long> {
+     @HWAttribute
+    private String id;
+
+    @HWAttribute
+    private String name;
+
+    @HWAttribute
+    private Boolean boolValue;
+
+    @HWAttribute
+    private Double doubleValue;
+
+    @HWAttribute
+    private Long longValue;
+
+    @HWAttribute //Crea struttura array su datastore
+    private List<String> listString;
+
+    @HWAttribute //Crea struttura array su datastore
+    private List<Long> listLong;
+
+    @HWAttribute //Crea hashmap come embedded entity
+    HashMap<String, String> map;
+
+    @HWAttribute //Serializza settings come embedded entity
+    Settings settings;
+
+    @HWAttribute //Crea un array di embedded entity
+    List<Settings> settingsList;
+
+    @HWAttribute
+    private Instant instant;
+
+    @HWAttribute(type = "bcrypt") //Se viene passata una stringa viene automaticamente criptata, se viene passata una stringa gia criptata non viene trasformata
+    private String autoBcrypt;
+
+    @HWAttribute //Crea embedded entity
+    private ObjectNode jsonValue;
+
+    @HWAttribute (type = "json") //crea un text json
+    private ObjectNode jsonValue;
+
+    @HWAttribute  //Crea array embedded entity
+    private ArrayNode arrayJsonValue;
+
+    @HWAttribute(links = {"company"})
+    private Long companyId;
+
+    @HWAttribute(links = {"company"}) //Solo in lettura
+    private Company company;
+}
+```
+
+**Checklist per i Servizi**:
+
+- [ ] Servizio ha `@Singleton`
+- [ ] HwEntityService iniettato nel costruttore
+- [ ] Usa `hwEntityService.create()` per creare
+- [ ] Usa `hwEntityService.findById()` per leggere singolo record
+- [ ] Usa `hwEntityService.list()` con HwFilters per cercare
+- [ ] Usa `hwEntityService.upsert()` per aggiornare
+- [ ] Eccezioni specifiche lanciate quando record non trovato
+- [ ] Logging appropriato per operazioni critiche
+- [ ] Entità ha `@HWEntity`, `@HWAttribute`, `@Serdeable`
+- [ ] Entità implementa `IEntity<TipoChiave>`
+
+**Esempi Consultare**:
+
+Vedi `examples/crud/` per implementazioni complete:
+- `CustomerService.java` - Pattern basic CRUD
+- `ProductService.java` - Filtri e paginazione
+- `OrderService.java` - Transazioni con `ITransactionManager`
+
+---
 
 ## Come Navigare Questo Repository
 
@@ -300,9 +626,6 @@ mvn clean package
 # Esecuzione locale
 mvn mn:run
 
-# Docker build
-docker build -t my-service:latest .
-docker run -p 8080:8080 my-service:latest
 ```
 
 ## Best Practices
@@ -319,13 +642,13 @@ docker run -p 8080:8080 my-service:latest
 
 ### ❌ Non fare
 
-1. ❌ Password in chiaro - sempre usare BCrypt
-2. ❌ Endpoint senza autenticazione - proteggi sempre
-3. ❌ Debug exception catching - gestisci gli errori appropriatamente
-4. ❌ Query n+1 - usa JOIN e eager loading dove opportuno
-5. ❌ Magic string - usa costanti e enum
-6. ❌ Bloccare thread worker - usa Micronaut async patterns
-7. ❌ Esporre dettagli interni - risposte di errore generiche
+1. Password in chiaro - sempre usare BCrypt
+2.  Endpoint senza autenticazione - proteggi sempre
+3.  Debug exception catching - gestisci gli errori appropriatamente
+4.  Query n+1 - usa JOIN e eager loading dove opportuno
+5.  Magic string - usa costanti e enum
+6.  Bloccare thread worker - usa Micronaut async patterns
+7.  Esporre dettagli interni - risposte di errore generiche
 
 ## Struttura di un Endpoint Tipico
 
@@ -354,32 +677,6 @@ Se errore:
   └─ Restituisce ErrorMessage JSON
 ```
 
-## Deployment
-
-### Google Cloud Run
-
-```bash
-# Build image
-gcloud builds submit --tag gcr.io/PROJECT_ID/my-service .
-
-# Deploy
-gcloud run deploy my-service \
-  --image gcr.io/PROJECT_ID/my-service \
-  --platform managed \
-  --region europe-west1
-```
-
-### Kubernetes (GKE)
-
-```bash
-# Push immagine
-docker tag my-service:latest gcr.io/PROJECT_ID/my-service:latest
-docker push gcr.io/PROJECT_ID/my-service:latest
-
-# Deploy
-kubectl apply -f deployment.yaml
-```
-
 ## Risorse Utili
 
 ### Documentazione
@@ -388,25 +685,11 @@ kubectl apply -f deployment.yaml
 - [JWT Introduction](https://jwt.io/)
 - [Google Cloud Documentation](https://cloud.google.com/docs)
 
-### Guide Correlate
-
-- [ARCHITECTURE.md](ARCHITECTURE.md) - Architettura generale del framework
-- [CODING_GUIDELINES.md](CODING_GUIDELINES.md) - Linee guida di codifica
-
 ### Tools e Utilità
 
 ```bash
 # Test API locali
 curl -X GET http://localhost:8080/api/endpoint
-
-# View logs in container
-docker logs -f container-id
-
-# Monitor GCP deployment
-gcloud run services describe my-service
-
-# Debug database
-cloud sql proxy -instances=PROJECT:REGION:INSTANCE &
 ```
 
 ## FAQ per l'Agente
@@ -426,18 +709,8 @@ R: Usa `InternalRequestController` pattern in `examples/internalrequest/`
 **D: Come faccio lock distribuiti?**
 R: Vedi `examples/distribuitedlock/` - BlockingLockExecutor o LockExecutor
 
-**D: Come testo il mio servizio?**
-R: Scrivi test in `src/test/java/` - Vedi `examples/` per pattern
-
 **D: Come configuro le variabili d'ambiente?**
 R: Usa `${VAR_NAME:default-value}` in application.yml
-
-**D: Come deplopo in production?**
-R: Vedi sezione Deployment - Google Cloud Run o GKE
-
-## Supporto e Contributi
-
-Per domande o miglioramenti, contatta il team di sviluppo Epipoli.
 
 ---
 

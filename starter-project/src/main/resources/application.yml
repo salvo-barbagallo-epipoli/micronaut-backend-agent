@@ -1,15 +1,10 @@
-highways:
-  datastore:
-    datastoreId: ${DATASTORE_ID:datastore-eu}
-    namespace: ${DATASTORE_NAMESPACE:demo}
-    projectId: ${DATASTORE_PROJECT_ID:pocketwallet-dev-srv-epipoli}
 gcloud:
-  projectId: ${GCLOUD_PROJECT_ID:pocketwallet-dev-srv-epipoli}
+  projectId: 
 micronaut:
   server:
     port: 8080
   openapi:
-    enabled: ${SWAGGER_ENABLED:false}
+    enabled: true
   application:
     name: starter
   http:
@@ -28,34 +23,7 @@ micronaut:
       openapi-explorer:
         paths: classpath:META-INF/swagger/views/openapi-explorer
         mapping: /openapi-explorer/**
-  security:
-    authentication: bearer
-    endpoints:
-      login:
-        enabled: false
-      oauth:
-        enabled: false
-    token:
-      jwt:
-        signatures:
-          secret:
-            generator:
-              secret: ${JWT_GENERATOR_SIGNATURE_SECRET:pleaseChangeThisSecretForANewOne}
-    interceptUrlMap:
-      - pattern: /starter/**
-        access:
-          - isAnonymous()
-      - pattern: /swagger/**
-        httpMethod: GET
-        access:
-          - isAnonymous()
-      - pattern: /swagger-ui/**
-        httpMethod: GET
-        access:
-          - isAnonymous()
-      - pattern: /**
-        access:
-          - isAuthenticated()
+
 logger:
   levels:
     com.epipoli.starter: INFO
